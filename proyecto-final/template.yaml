@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  proyecto-final
+
+  Sample SAM Template for proyecto-final
+
+Globals:
+  Function:
+    Timeout: 120
+
+Resources:
+  Funcion:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: ProductosProyectoFinal
+      CodeUri: Funcion/
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Description: "Funcion que crea, edita, lista, detalle y elimina productos"
+      MemorySize: 128
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductosTable
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ProductosTable
+      Architectures:
+        - x86_64
+      Events:
+        FuncionnApi:
+          Type: Api
+          Properties:
+            Path: /CrearProducto
+            Method: PUT
+        ListarProductosApi:
+          Type: Api
+          Properties:
+            Path: /ListarProductos
+            Method: GET
+        DetalleProductoApi:
+          Type: Api
+          Properties:
+            Path: /DetalleProducto/{id}
+            Method: GET
+        EditarProductoApi:
+          Type: Api
+          Properties:
+            Path: /EditarProducto/{id}
+            Method: PUT
+        EliminarProductoApi:
+          Type: Api
+          Properties:
+            Path: /EliminarProducto/{id}
+            Method: DELETE
+  ProductosTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ProductosTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: fecha_creacion
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: fecha_creacion
+          KeyType: RANGE
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  ApiEnpoint:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
